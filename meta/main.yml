@@ -1,0 +1,21 @@
+---
+galaxy_info:
+  role_name: 'satellite_template_synchronization'
+  namespace: 'sscheib'
+  author: 'Steffen Scheib'
+  description: "This role configures Red Hat Satellite's Template Synchronization Plugin"
+  issue_tracker_url: 'https://github.com/sscheib/ansible-role-satellite_template_synchronization/issues'
+  license: 'GPL-2.0-or-later'
+  min_ansible_version: '2.12'
+  platforms:
+    - name: 'EL'
+      versions:
+        - '8'
+
+  galaxy_tags:
+    - 'rhel'
+    - 'katello'
+    - 'satellite'
+
+dependencies: []
+...
