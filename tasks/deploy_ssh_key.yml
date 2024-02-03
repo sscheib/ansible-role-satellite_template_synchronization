@@ -1,0 +1,11 @@
+---
+- name: 'deploy_ssh_key | Slurp foreman SSH key: {{ _sat_foreman_ssh_key_path }}'
+  ansible.builtin.slurp:
+    src: '{{ _sat_foreman_ssh_public_key_path }}'
+  register: '__t_foreman_pub_key'
+  become: true
+
+- name: 'deploy_ssh_key | Include tasks to deploy the SSH key'
+  ansible.builtin.include_tasks:
+    file: '{{ _sat_scm_type }}.yml'
+...

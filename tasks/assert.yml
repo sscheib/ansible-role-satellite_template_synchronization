@@ -1,0 +1,187 @@
+---
+- name: 'assert | Ensure _sat_quiet_assert is defined properly'
+  ansible.builtin.assert:
+    that:
+      - "lookup('ansible.builtin.vars', __t_var) is defined"
+      - "lookup('ansible.builtin.vars', __t_var) is boolean"
+      - "lookup('ansible.builtin.vars', __t_var) | bool | string == lookup('ansible.builtin.vars', __t_var) | string"
+    success_msg: "Variable '{{ __t_var }}' defined properly - value: '{{ lookup('ansible.builtin.vars', __t_var) }}'"
+    fail_msg: "Variable '{{ __t_var }}' failed to validate"
+    quiet: '{{ _sat_quiet_assert | default(false) }}'
+  loop:
+    - '_sat_quiet_assert'
+  loop_control:
+    loop_var: '__t_var'
+
+- name: 'assert | Ensure boolean variables are defined properly'
+  ansible.builtin.assert:
+    that:
+      - "lookup('ansible.builtin.vars', __t_var) is defined"
+      - "lookup('ansible.builtin.vars', __t_var) is boolean"
+      - "lookup('ansible.builtin.vars', __t_var) | bool | string == lookup('ansible.builtin.vars', __t_var) | string"
+    success_msg: "Variable '{{ __t_var }}' defined properly - value: '{{ lookup('ansible.builtin.vars', __t_var) }}'"
+    fail_msg: "Variable '{{ __t_var }}' failed to validate"
+    quiet: '{{ _sat_quiet_assert }}'
+  loop:
+    - '_sat_create_foreman_ssh_key'
+    - '_sat_add_repo_host_keys_to_known_hosts'
+    - '_sat_deploy_foreman_ssh_key'
+  loop_control:
+    loop_var: '__t_var'
+
+- name: 'assert | Ensure string variables are defined properly'
+  ansible.builtin.assert:
+    that:
+      - "lookup('ansible.builtin.vars', __t_var) is defined"
+      - "lookup('ansible.builtin.vars', __t_var) is string"
+      - "lookup('ansible.builtin.vars', __t_var) != None"
+      - "lookup('ansible.builtin.vars', __t_var) != ''"
+    success_msg: "Variable '{{ __t_var }}' defined properly - value: '{{ lookup('ansible.builtin.vars', __t_var) }}'"
+    fail_msg: "Variable '{{ __t_var }}' failed to validate"
+    quiet: '{{ _sat_quiet_assert }}'
+  loop:
+    - '_satellite_server_url'
+    - '_sat_foreman_ssh_key_path'
+    - '_sat_foreman_ssh_public_key_path'
+    - '_sat_foreman_ssh_key_type'
+    - '_sat_foreman_username'
+  loop_control:
+    loop_var: '__t_var'
+
+- name: 'assert | Ensure SSH key type is supported'
+  ansible.builtin.assert:
+    that:
+      - >-
+        _sat_foreman_ssh_key_type in [
+          'rsa'
+        ]
+    success_msg: "Variable '_sat_foreman_ssh_key_type' defined properly - value: '{{ _sat_foreman_ssh_key_type }}'"
+    fail_msg: >-
+      Variable '_sat_foreman_ssh_key_type' failed to validate. Allowed values are: 'rsa', Received value:
+      '{{ _sat_foreman_ssh_key_type | default(None) }}'
+    quiet: '{{ _sat_quiet_assert }}'
+
+- name: 'assert | Ensure secret string variables are defined properly'
+  ansible.builtin.assert:
+    that:
+      - "lookup('ansible.builtin.vars', __t_var) is defined"
+      - "lookup('ansible.builtin.vars', __t_var) is string"
+      - "lookup('ansible.builtin.vars', __t_var) != None"
+      - "lookup('ansible.builtin.vars', __t_var) != ''"
+    success_msg: "Variable '{{ __t_var }}' defined properly - value: '{{ lookup('ansible.builtin.vars', __t_var) }}'"
+    fail_msg: "Variable '{{ __t_var }}' failed to validate"
+    quiet: '{{ _sat_quiet_assert }}'
+  no_log: true
+  loop:
+    - '_satellite_password'
+    - '_satellite_username'
+  loop_control:
+    loop_var: '__t_var'
+
+- name: 'assert | Ensure Satellite server URL has a valid scheme (http/https) set'
+  ansible.builtin.assert:
+    that:
+      - "_satellite_server_url | ansible.builtin.urlsplit('scheme') is search('^https?$')"
+    success_msg: 'Variable _satellite_server_url has a valid scheme set.'
+    fail_msg: 'Variable _satellite_server_url has no valid scheme (http/https) set.'
+    quiet: '{{ _sat_quiet_assert }}'
+
+- name: 'assert | Ensure integer variables are defined properly'
+  ansible.builtin.assert:
+    that:
+      - "lookup('ansible.builtin.vars', __t_var) is defined"
+      - "lookup('ansible.builtin.vars', __t_var) | int | string == lookup('ansible.builtin.vars', __t_var) | string"
+      - "lookup('ansible.builtin.vars', __t_var) | int is number"
+      - "lookup('ansible.builtin.vars', __t_var) | int is integer"
+      - "lookup('ansible.builtin.vars', __t_var) | int >= 0"
+    success_msg: "Variable '{{ __t_var }}' defined properly - value: '{{ lookup('ansible.builtin.vars', __t_var) }}'"
+    fail_msg: "Variable '{{ __t_var }}' failed to validate"
+    quiet: '{{ _sat_quiet_assert }}'
+  loop:
+    - '_sat_foreman_ssh_key_size'
+  loop_control:
+    loop_var: '__t_var'
+
+- name: 'assert | Include tasks to ensure Template Sync settings are properly defined'
+  ansible.builtin.include_tasks:
+    file: 'assert_settings.yml'
+
+- name: 'assert | Ensure optional list variables are defined properly - if defined'
+  ansible.builtin.assert:
+    that:
+      - >-
+        (
+          lookup('ansible.builtin.vars', __t_var, default=[]) is defined
+          and lookup('ansible.builtin.vars', __t_var, default=[]) != None
+          and lookup('ansible.builtin.vars', __t_var, default=[]) | length > 0
+        ) | ansible.builtin.ternary(
+          lookup('ansible.builtin.vars', __t_var, default=[]) is not string, true
+        )
+
+      - >-
+        (
+          lookup('ansible.builtin.vars', __t_var, default=[]) is defined
+          and lookup('ansible.builtin.vars', __t_var, default=[]) != None
+          and lookup('ansible.builtin.vars', __t_var, default=[]) | length > 0
+        ) | ansible.builtin.ternary(
+          lookup('ansible.builtin.vars', __t_var, default=[]) is not mapping, true
+        )
+
+      - >-
+        (
+          lookup('ansible.builtin.vars', __t_var, default=[]) is defined
+          and lookup('ansible.builtin.vars', __t_var, default=[]) != None
+          and lookup('ansible.builtin.vars', __t_var, default=[]) | length > 0
+        ) | ansible.builtin.ternary(
+          lookup('ansible.builtin.vars', __t_var, default=[]) is iterable, true
+        )
+
+      - >-
+        (
+          lookup('ansible.builtin.vars', __t_var, default=[]) is defined
+          and lookup('ansible.builtin.vars', __t_var, default=[]) != None
+          and lookup('ansible.builtin.vars', __t_var, default=[]) | length > 0
+        ) | ansible.builtin.ternary(
+          lookup('ansible.builtin.vars', __t_var, default=[]) is sequence, true
+        )
+
+    success_msg: >-
+      {{
+        'Variable ' ~ __t_var ~ ' defined properly - value: ' ~ lookup('ansible.builtin.vars', __t_var)
+        if lookup('ansible.builtin.vars', __t_var, default=[]) != None and
+        lookup('ansible.builtin.vars', __t_var, default=[]) | length > 0
+        else
+        'Variable ' ~ __t_var ~ ' is not defined or is an empty list'
+      }}
+    fail_msg: "Variable '{{ __t_var }}' failed to validate"
+    quiet: '{{ _sat_quiet_assert }}'
+  loop:
+    - '_sat_template_sync_locations'
+    - '_sat_template_sync_organizations'
+  loop_control:
+    loop_var: '__t_var'
+
+- name: 'assert | Ensure SCM type is defined properly'
+  ansible.builtin.assert:
+    that:
+      - >-
+        _sat_scm_type in [
+          'github'
+        ]
+    success_msg: "Variable '_sat_scm_type' defined properly - value: '{{ _sat_scm_type }}'"
+    fail_msg: >-
+      Variable '_sat_scm_type' failed to validate. Allowed values are: 'github', Received value:
+      '{{ _sat_scm_type | default(None) }}'
+    quiet: '{{ _sat_quiet_assert }}'
+  when:
+    - '_sat_scm_type is defined'
+    - "_sat_scm_type != ''"
+    - '_sat_scm_type != None'
+
+- name: 'assert | Include tasks to ensure GitHub variables are properly defined - when SCM type is github'
+  ansible.builtin.include_tasks:
+    file: 'assert_github.yml'
+  when:
+    - '_sat_scm_type is defined'
+    - "_sat_scm_type == 'github'"
+...

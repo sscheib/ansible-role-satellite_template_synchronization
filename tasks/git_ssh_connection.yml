@@ -1,0 +1,52 @@
+---
+- name: 'git_ssh_connection | Set fact: repository host'
+  ansible.builtin.set_fact:
+    __t_repo_host: >-
+      {{
+        _sat_template_sync_settings |
+        selectattr('name', '==', 'template_sync_repo') |
+        map(attribute='value') |
+        first |
+        ansible.builtin.urlsplit('hostname')
+      }}
+
+    # use custom port if given, otherwise default to 22
+    __t_repo_port: >-
+      {{
+        _sat_template_sync_settings |
+        selectattr('name', '==', 'template_sync_repo') |
+        map(attribute='value') |
+        first |
+        ansible.builtin.urlsplit('port')
+        if
+        _sat_template_sync_settings |
+        selectattr('name', '==', 'template_sync_repo') |
+        map(attribute='value') |
+        first |
+        ansible.builtin.urlsplit('port') != None
+        else
+        22
+      }}
+
+- name: 'git_ssh_connection | Set fact: Add custom port to repository host'
+  ansible.builtin.set_fact:
+    __t_repo_host: "{{ '[' ~ __t_repo_host ~ ']:' ~ __t_repo_port }}"
+  when: '__t_repo_port != 22'
+
+- name: 'git_ssh_connection | Scan repository SSH host keys from: {{ __t_repo_host }}'
+  ansible.builtin.shell:
+    cmd: 'ssh-keyscan {{ __t_repo_host }} -p {{ __t_repo_port }} 2>/dev/null'
+  changed_when: false
+  register: '__t_ssh_host_keys'
+
+- name: 'git_ssh_connection | Add SSH host keys to known_hosts file'
+  ansible.builtin.known_hosts:
+    name: '{{ __t_repo_host }}'
+    key: '{{ __t_host_key }}'
+    path: '{{ _sat_foreman_known_hosts_file_path }}'
+  become: true
+  become_user: '{{ _sat_foreman_username }}'
+  loop: '{{ __t_ssh_host_keys.stdout_lines }}'
+  loop_control:
+    loop_var: '__t_host_key'
+...

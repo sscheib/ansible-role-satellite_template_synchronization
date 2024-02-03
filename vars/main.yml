@@ -1,0 +1,90 @@
+---
+# settings to use when synchronizing templates
+_sat_template_sync_settings: '{{ sat_template_sync_settings | mandatory }}'
+
+# these variables need to be either specified directly or be specified by
+# an environment variable
+#
+# possible environment variables:
+# - satellite_username: SATELLITE_USERNAME, SATELLITE_USER
+# - satellite_password: SATELLITE_PASSWORD
+# - satellite_server_url: SATELLITE_SERVER_URL, SATELLITE_SERVER, SATELLITE_URL
+
+# username to authenticate with against the Satellite API
+_satellite_username: '{{ satellite_username | default(None) }}'
+
+# password of the user to authenticate with against the Satellite API
+_satellite_password: '{{ satellite_password | default(None) }}'
+
+# URL to the Satellite API (including http/s://)
+_satellite_server_url: '{{ satellite_server_url | default(None) }}'
+
+# whether to validate certificates when connecting to the Satellite API
+_satellite_validate_certs: '{{ satellite_validate_certs | default(_def_satellite_validate_certs) }}'
+
+# foreman username (usually 'foreman')
+_sat_foreman_username: '{{ sat_foreman_username | default(_def_sat_foreman_username) }}'
+
+# whether to create an SSH key for the foreman user
+_sat_create_foreman_ssh_key: '{{ sat_create_foreman_ssh_key | default(_def_sat_create_foreman_ssh_key) }}'
+
+# path to the foreman user's private SSH key
+_sat_foreman_ssh_key_path: '{{ sat_foreman_ssh_key_path | default(_def_sat_foreman_ssh_key_path) }}'
+
+# path to the foreman user's public SSH key (used for deploying to an SCM, such as GitHub)
+_sat_foreman_ssh_public_key_path: >-
+  {{
+    sat_foreman_ssh_public_key_path | default(_def_sat_foreman_ssh_public_key_path)
+  }}
+
+# key type to generate, currently only rsa supported
+_sat_foreman_ssh_key_type: '{{ sat_foreman_ssh_key_type | default(_def_sat_foreman_ssh_key_type) }}'
+
+# size/length of the SSH key to generate
+_sat_foreman_ssh_key_size: '{{ sat_foreman_ssh_key_size | default(_def_sat_foreman_ssh_key_size) }}'
+
+# whether to add scanned keys from the repository to the known hosts of the foreman user
+_sat_add_repo_host_keys_to_known_hosts: >-
+  {{
+    sat_add_repo_host_keys_to_known_hosts | default(_def_sat_add_repo_host_keys_to_known_hosts)
+  }}
+
+# path to the known_hosts file of the foreman user
+_sat_foreman_known_hosts_file_path: >-
+  {{
+    sat_foreman_known_hosts_file_path | default(_def_sat_foreman_known_hosts_file_path)
+  }}
+
+# whether to deploy the SSH public key to any SCM (right now only GitHub is supported)
+_sat_deploy_foreman_ssh_key: '{{ sat_deploy_foreman_ssh_key | default(_def_sat_deploy_foreman_ssh_key) }}'
+
+# which SCM to use to deploy the foreman SSH public key
+# currently only github is supported
+_sat_scm_type: '{{ sat_scm_type | default(None) }}'
+
+# GitHub variables for deploying the SSH key to GitHub
+_sat_github: '{{ sat_github | default(None) }}'
+
+# allowed values for attribute 'template_sync_lock', when defined as string
+_sat_template_sync_lock_allowed_values: >-
+  {{
+    sat_template_sync_lock_allowed_values | default(_def_sat_template_sync_lock_allowed_values)
+  }}
+
+# allowed values for attribute 'template_sync_associate'
+_sat_template_sync_associate_allowed_values: >-
+  {{
+    sat_template_sync_associate_allowed_values | default(_def_sat_template_sync_associate_allowed_values)
+  }}
+
+# list of Organizations to add the imported Templates to
+# useful if not defined in each templates' header
+_sat_template_sync_organizations: '{{ sat_template_sync_organizations | default(None) }}'
+
+# list of Locations to add the imported Templates to
+# useful if not defined in each templates' header
+_sat_template_sync_locations: '{{ sat_template_sync_locations | default(None) }}'
+
+# whether to quiet assert
+_sat_quiet_assert: '{{ sat_quiet_assert | default(_def_sat_quiet_assert) }}'
+...

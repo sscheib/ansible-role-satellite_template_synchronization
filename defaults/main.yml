@@ -1,0 +1,47 @@
+---
+# foreman username (usually 'foreman')
+_def_sat_foreman_username: 'foreman'
+
+# whether to create an SSH key for the foreman user
+_def_sat_create_foreman_ssh_key: false
+
+# path to the foreman user's private SSH key
+_def_sat_foreman_ssh_key_path: '/usr/share/foreman/.ssh/id_rsa'
+
+# path to the foreman user's public SSH key
+_def_sat_foreman_ssh_public_key_path: '/usr/share/foreman/.ssh/id_rsa.pub'
+
+# key type to generate, currently only rsa supported
+_def_sat_foreman_ssh_key_type: 'rsa'
+
+# size/length of the SSH key to generate
+_def_sat_foreman_ssh_key_size: 4096
+
+# whether to add scanned keys from the repository to the known hosts of the foreman user
+_def_sat_add_repo_host_keys_to_known_hosts: false
+
+# path to the known_hosts file of the foreman user
+_def_sat_foreman_known_hosts_file_path: '/usr/share/foreman/.ssh/known_hosts'
+
+# whether to deploy the SSH public key to any SCM (right now only GitHub is supported)
+_def_sat_deploy_foreman_ssh_key: false
+
+# whether to validate certificates when connecting to the Satellite API
+_def_satellite_validate_certs: true
+
+# allowed values for attribute 'template_sync_lock', when defined as string
+_def_sat_template_sync_lock_allowed_values:
+  - 'lock'
+  - 'keep_lock_new'
+  - 'keep'
+  - 'unlock'
+
+# allowed values for attribute 'template_sync_associate', when defined as string
+_def_sat_template_sync_associate_allowed_values:
+  - 'always'
+  - 'never'
+  - 'new'
+
+# whether to quiet assert
+_def_sat_quiet_assert: true
+...

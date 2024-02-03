@@ -1,0 +1,182 @@
+---
+- name: 'template_synchronization | Synchronize templates from git repository'
+  redhat.satellite.templates_import:
+    username: '{{ _satellite_username }}'
+    password: '{{ _satellite_password }}'
+    server_url: '{{ _satellite_server_url }}'
+    validate_certs: '{{ _satellite_validate_certs }}'
+    associate: >-
+      {{
+        (
+          _sat_template_sync_settings |
+          selectattr('name', 'match', 'template_sync_associate') |
+          map(attribute='value', default=[]) |
+          length > 0
+        ) | ansible.builtin.ternary(
+          _sat_template_sync_settings |
+          selectattr('name', 'match', 'template_sync_associate') |
+          map(attribute='value') |
+          first,
+          omit
+        )
+      }}
+    branch: >-
+      {{
+        (
+          _sat_template_sync_settings |
+          selectattr('name', 'match', 'template_sync_branch') |
+          map(attribute='value', default=[]) |
+          length > 0
+        ) | ansible.builtin.ternary(
+          _sat_template_sync_settings |
+          selectattr('name', 'match', 'template_sync_branch') |
+          map(attribute='value') |
+          first,
+          omit
+        )
+      }}
+    dirname: >-
+      {{
+        (
+          _sat_template_sync_settings |
+          selectattr('name', 'match', 'template_sync_dirname') |
+          map(attribute='value', default=[]) |
+          length > 0
+        ) | ansible.builtin.ternary(
+          _sat_template_sync_settings |
+          selectattr('name', 'match', 'template_sync_dirname') |
+          map(attribute='value') |
+          first,
+          omit
+        )
+      }}
+    filter: >-
+      {{
+        (
+          _sat_template_sync_settings |
+          selectattr('name', 'match', 'template_sync_filter') |
+          map(attribute='value', default=[]) |
+          length > 0
+        ) | ansible.builtin.ternary(
+          _sat_template_sync_settings |
+          selectattr('name', 'match', 'template_sync_filter') |
+          map(attribute='value') |
+          first,
+          omit
+        )
+      }}
+    force: >-
+      {{
+        (
+          _sat_template_sync_settings |
+          selectattr('name', 'match', 'template_sync_force') |
+          map(attribute='value', default=[]) |
+          length > 0
+        ) | ansible.builtin.ternary(
+          _sat_template_sync_settings |
+          selectattr('name', 'match', 'template_sync_force') |
+          map(attribute='value') |
+          first,
+          omit
+        )
+      }}
+    locations: >-
+      {{
+        _sat_template_sync_locations
+        if _sat_template_sync_locations is defined
+        and _sat_template_sync_locations != None
+        and _sat_template_sync_locations | length > 0
+        else
+        omit
+      }}
+    lock: >-
+      {{
+        (
+          _sat_template_sync_settings |
+          selectattr('name', 'match', 'template_sync_lock') |
+          map(attribute='value', default=[]) |
+          length > 0
+        ) | ansible.builtin.ternary(
+          (
+            _sat_template_sync_settings |
+            selectattr('name', 'match', 'template_sync_lock') |
+            map(attribute='value', default=[]) |
+            first |
+            lower == 'lock'
+          ) | ansible.builtin.ternary(
+            true,
+            false
+          ),
+          omit
+        )
+      }}
+    negate: >-
+      {{
+        (
+          _sat_template_sync_settings |
+          selectattr('name', 'match', 'template_sync_negate') |
+          map(attribute='value', default=[]) |
+          length > 0
+        ) | ansible.builtin.ternary(
+          _sat_template_sync_settings |
+          selectattr('name', 'match', 'template_sync_negate') |
+          map(attribute='value') |
+          first,
+          omit
+        )
+      }}
+    organizations: >-
+      {{
+        _sat_template_sync_organizations
+        if _sat_template_sync_organizations is defined
+        and _sat_template_sync_organizations != None
+        and _sat_template_sync_organizations | length > 0
+        else
+        omit
+      }}
+    prefix: >-
+      {{
+        (
+          _sat_template_sync_settings |
+          selectattr('name', 'match', 'template_sync_prefix') |
+          map(attribute='value', default=[]) |
+          length > 0
+        ) | ansible.builtin.ternary(
+          _sat_template_sync_settings |
+          selectattr('name', 'match', 'template_sync_prefix') |
+          map(attribute='value') |
+          first,
+          omit
+        )
+      }}
+    repo: >-
+      {{
+        (
+          _sat_template_sync_settings |
+          selectattr('name', 'match', 'template_sync_repo') |
+          map(attribute='value', default=[]) |
+          length > 0
+        ) | ansible.builtin.ternary(
+          _sat_template_sync_settings |
+          selectattr('name', 'match', 'template_sync_repo') |
+          map(attribute='value') |
+          first,
+          omit
+        )
+      }}
+    verbose: >-
+      {{
+        (
+          _sat_template_sync_settings |
+          selectattr('name', 'match', 'template_sync_verbose') |
+          map(attribute='value', default=[]) |
+          length > 0
+        ) | ansible.builtin.ternary(
+          _sat_template_sync_settings |
+          selectattr('name', 'match', 'template_sync_verbose') |
+          map(attribute='value') |
+          first,
+          omit
+        )
+      }}
+...

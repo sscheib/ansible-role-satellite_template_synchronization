@@ -1,0 +1,11 @@
+---
+- name: 'create_ssh_key | Generate SSH key for the foreman user: {{ _sat_foreman_ssh_key_path }}'
+  community.crypto.openssh_keypair:
+    path: '{{ _sat_foreman_ssh_key_path }}'
+    type: '{{ _sat_foreman_ssh_key_type }}'
+    size: '{{ _sat_foreman_ssh_key_size }}'
+    group: '{{ _sat_foreman_username }}'
+    mode: '0600'
+  become: true
+  become_user: '{{ _sat_foreman_username }}'
+...

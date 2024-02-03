@@ -1,0 +1,12 @@
+---
+- name: 'github | Deploy SSH key to GitHub repository: {{ _sat_github.repository }}'
+  community.general.github_deploy_key:
+    owner: '{{ _sat_github.owner }}'
+    repository: '{{ _sat_github.repository }}'
+    name: '{{ _sat_github.key_name }}'
+    key: "{{ __t_foreman_pub_key.content | ansible.builtin.b64decode }}"
+    read_only: '{{ _sat_github.read_only }}'
+    force: '{{ _sat_github.force_deployment }}'
+    token: '{{ _sat_github.token }}'
+  delegate_to: 'localhost'
+...

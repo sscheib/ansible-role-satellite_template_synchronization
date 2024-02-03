@@ -1,0 +1,74 @@
+---
+- name: 'Include tasks to retrieve environment variables for connecting to Satellite'
+  ansible.builtin.include_tasks:
+    file: 'retrieve_environment_variables.yml'
+  # include only when either of the below variables is not defined
+  when: >-
+    (
+      _satellite_server_url is not defined
+      or _satellite_server_url == ''
+      or _satellite_server_url == None
+    ) or (
+      _satellite_username is not defined
+      or _satellite_username == ''
+      or _satellite_username == None
+    ) or (
+      _satellite_password is not defined
+      or _satellite_password == ''
+      or _satellite_password == None
+    ) or (
+      _satellite_validate_certs is not defined
+      or _satellite_validate_certs == ''
+      or _satellite_validate_certs == None
+    )
+
+- name: 'Include tasks to ensure variables are defined properly'
+  ansible.builtin.include_tasks:
+    file: 'assert.yml'
+
+- name: 'Include tasks to create an ssh key for the foreman user: {{ _sat_foreman_username }}'
+  ansible.builtin.include_tasks:
+    file: 'create_ssh_key.yml'
+  when:
+    - '_sat_create_foreman_ssh_key is defined'
+    - '_sat_create_foreman_ssh_key'
+
+- name: 'Include tasks to handle git connection via SSH'
+  ansible.builtin.include_tasks:
+    file: 'git_ssh_connection.yml'
+  when:
+    - '_sat_add_repo_host_keys_to_known_hosts is defined'
+    - '_sat_add_repo_host_keys_to_known_hosts'
+    # template_sync_repo is defined and the url's scheme is ssh
+    - >-
+      (
+        _sat_template_sync_settings |
+        selectattr('name', '==', 'template_sync_repo') |
+        map(attribute='value', default=[]) |
+        length > 0
+      ) | ansible.builtin.ternary(
+        (
+          _sat_template_sync_settings |
+          selectattr('name', '==', 'template_sync_repo') |
+          map(attribute='value', default=[]) |
+          first |
+          ansible.builtin.urlsplit('scheme') |
+          lower == 'ssh'
+        ) | ansible.builtin.ternary(
+          true,
+          false
+        ),
+        false
+      )
+
+- name: 'Include tasks to deploy the foreman SSH key'
+  ansible.builtin.include_tasks:
+    file: 'deploy_ssh_key.yml'
+  when:
+    - '_sat_deploy_foreman_ssh_key is defined'
+    - '_sat_deploy_foreman_ssh_key'
+
+- name: 'Include tasks to synchronize Satellite templates'
+  ansible.builtin.include_tasks:
+    file: 'template_synchronization.yml'
+...

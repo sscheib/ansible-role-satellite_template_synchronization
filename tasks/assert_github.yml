@@ -1,0 +1,77 @@
+---
+- name: 'assert_github | Ensure GitHub variables dictionary is defined'
+  ansible.builtin.assert:
+    that:
+      - '_sat_github is defined'
+      - '_sat_github is not string'
+      - '_sat_github is iterable'
+      - '_sat_github is mapping'
+
+    success_msg: '_sat_github is defined as dictionary'
+    fail_msg: "Variable '_sat_github' failed to validate"
+    quiet: '{{ _sat_quiet_assert }}'
+
+- name: 'assert_github | Ensure mandatory GitHub string variables are defined properly'
+  ansible.builtin.assert:
+    that:
+      - '_sat_github[__t_var] is defined'
+      - "_sat_github[__t_var] != ''"
+      - '_sat_github[__t_var] != None'
+
+    success_msg: "Dictionary attribute '{{ __t_var }}' defined properly - value: '{{ _sat_github[__t_var] }}'"
+    fail_msg: "Dictionary attribute '{{ __t_var }}' failed to validate"
+    quiet: '{{ _sat_quiet_assert }}'
+  loop:
+    - 'repository'
+    - 'key_name'
+  loop_control:
+    loop_var: '__t_var'
+
+- name: 'assert_github | Ensure mandatory GitHub secret string variables are defined properly'
+  ansible.builtin.assert:
+    that:
+      - '_sat_github[__t_var] is defined'
+      - "_sat_github[__t_var] != ''"
+      - '_sat_github[__t_var] != None'
+  no_log: true
+  loop:
+    - 'owner'
+    - 'token'
+  loop_control:
+    loop_var: '__t_var'
+
+- name: 'assert_github | Ensure optional GitHub boolean variables are defined properly - if defined'
+  ansible.builtin.assert:
+    that:
+      - >-
+        (
+          _sat_github[__t_var] is defined
+          and _sat_github[__t_var] | default('') | string != ''
+          and _sat_github[__t_var] | default('') | string != None
+        ) | ansible.builtin.ternary(
+          _sat_github[__t_var] | default('') | bool | string ==
+          _sat_github[__t_var] | default('') | string, true
+        )
+      - >-
+        (
+          _sat_github[__t_var] is defined
+          and _sat_github[__t_var] | default('') | string != ''
+          and _sat_github[__t_var] | default('') | string != None
+        ) | ansible.builtin.ternary(
+          _sat_github[__t_var] | default('') is boolean, true
+        )
+    success_msg: >-
+      {{
+        'Dictionary attribute ' ~ __t_var ~ ' defined properly - value: ' ~ _sat_github[__t_var]
+        if _sat_github[__t_var] | default('') | string | length > 0
+        else
+        'Dictionary attribute ' ~ __t_var ~ ' is not defined'
+      }}
+    fail_msg: "Dictionary attribute '{{ __t_var }}' failed to validate"
+    quiet: '{{ _sat_quiet_assert }}'
+  loop:
+    - 'read_only'
+    - 'force_deployment'
+  loop_control:
+    loop_var: '__t_var'
+...

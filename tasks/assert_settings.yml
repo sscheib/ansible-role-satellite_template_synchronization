@@ -1,0 +1,274 @@
+---
+- name: 'assert_settings | Ensure list variables are defined properly'
+  ansible.builtin.assert:
+    that:
+      - "lookup('ansible.builtin.vars', __t_var) is defined"
+      - "lookup('ansible.builtin.vars', __t_var) | list | string == lookup('ansible.builtin.vars', __t_var) | string"
+      - "lookup('ansible.builtin.vars', __t_var) is sequence"
+    success_msg: "Variable '{{ __t_var }}' defined properly"
+    fail_msg: "Variable '{{ __t_var }}' failed to validate"
+    quiet: '{{ _sat_quiet_assert }}'
+  loop:
+    - '_sat_template_sync_settings'
+  loop_control:
+    loop_var: '__t_var'
+
+- name: 'assert_settings | Ensure no duplicated settings for the Template Sync are set'
+  ansible.builtin.assert:
+    that:
+      - >-
+        (
+          _sat_template_sync_settings |
+          selectattr('name', '==', __t_var) |
+          length > 0
+        ) | ansible.builtin.ternary(
+          _sat_template_sync_settings |
+          selectattr('name', '==', __t_var) |
+          length == 1,
+          true
+        )
+
+    success_msg: >-
+      {{
+        "Attribute '" ~ __t_var ~ "' is present only once in _sat_template_sync_settings"
+        if
+        _sat_template_sync_settings |
+        selectattr('name', '==', __t_var) |
+        length > 0
+        else
+        "Attribute '" ~  __t_var ~ "' is not defined"
+      }}
+
+    fail_msg: "Attribute '{{ __t_var }}' is present more than once in _sat_template_sync_settings"
+    quiet: '{{ _sat_quiet_assert }}'
+  loop:
+    - 'template_sync_verbose'
+    - 'template_sync_negate'
+    - 'template_sync_force'
+    - 'template_sync_associate'
+    - 'template_sync_filter'
+    - 'template_sync_repo'
+    - 'template_sync_branch'
+    - 'template_sync_lock'
+    - 'template_sync_dirname'
+    - 'template_sync_prefix'
+  loop_control:
+    loop_var: '__t_var'
+
+- name: 'assert_settings | Ensure string settings for the Template Sync are properly defined - when defined'
+  ansible.builtin.assert:
+    that:
+      # is string
+      - >-
+        (
+          _sat_template_sync_settings |
+          selectattr('name', '==', __t_var) |
+          length > 0
+        ) | ansible.builtin.ternary(
+          _sat_template_sync_settings |
+          selectattr('name', '==', __t_var) |
+          selectattr('value', 'string') |
+          length == 1,
+          true
+        )
+
+      # not empty
+      - >-
+        (
+          _sat_template_sync_settings |
+          selectattr('name', '==', __t_var) |
+          length > 0
+        ) | ansible.builtin.ternary(
+          _sat_template_sync_settings |
+          selectattr('name', '==', __t_var) |
+          selectattr('value', '!=', '') |
+          length == 1,
+          true
+        )
+
+      # not None
+      - >-
+        (
+          _sat_template_sync_settings |
+          selectattr('name', '==', __t_var) |
+          length > 0
+        ) | ansible.builtin.ternary(
+          _sat_template_sync_settings |
+          selectattr('name', '==', __t_var) |
+          selectattr('value', '!=', 'None') |
+          length == 1,
+          true
+        )
+
+    success_msg: >-
+      {{
+        "Attribute '" ~ __t_var ~ "' is defined properly"
+        if
+        _sat_template_sync_settings |
+        selectattr('name', '==', __t_var) |
+        length > 0
+        else
+        "Attribute '" ~  __t_var ~ "' is not defined"
+      }}
+
+    fail_msg: "Attribute '{{ __t_var }}' failed to validate"
+    quiet: '{{ _sat_quiet_assert }}'
+  loop:
+    - 'template_sync_associate'
+    - 'template_sync_filter'
+    - 'template_sync_repo'
+    - 'template_sync_branch'
+    - 'template_sync_dirname'
+    - 'template_sync_prefix'
+  loop_control:
+    loop_var: '__t_var'
+
+- name: 'assert_settings | Ensure boolean settings for the Template Sync are properly defined - when defined'
+  ansible.builtin.assert:
+    that:
+      # is boolean
+      - >-
+        (
+          _sat_template_sync_settings |
+          selectattr('name', '==', __t_var) |
+          length > 0
+        ) | ansible.builtin.ternary(
+          _sat_template_sync_settings |
+          selectattr('name', '==', __t_var) |
+          selectattr('value', 'boolean') |
+          length == 1,
+          true
+        )
+
+      # type detected correctly
+      - >-
+        (
+          _sat_template_sync_settings |
+          selectattr('name', '==', __t_var) |
+          length > 0
+        ) | ansible.builtin.ternary(
+          _sat_template_sync_settings |
+          selectattr('name', '==', __t_var) |
+          map(attribute='value', default=[]) |
+          first | default('') | bool | string
+          ==
+          _sat_template_sync_settings |
+          selectattr('name', '==', __t_var) |
+          selectattr('value', '!=', '') |
+          map(attribute='value') |
+          first | default('') | string,
+          true
+        )
+
+    success_msg: >-
+      {{
+        "Attribute '" ~ __t_var ~ "' is defined properly"
+        if
+        _sat_template_sync_settings |
+        selectattr('name', '==', __t_var) |
+        length > 0
+        else
+        "Attribute '" ~  __t_var ~ "' is not defined"
+      }}
+
+    fail_msg: "Attribute '{{ __t_var }}' is present more than once in _sat_template_sync_settings"
+    quiet: '{{ _sat_quiet_assert }}'
+  loop:
+    - 'template_sync_verbose'
+    - 'template_sync_negate'
+    - 'template_sync_force'
+  loop_control:
+    loop_var: '__t_var'
+
+- name: 'assert_settings | Ensure attribute template_sync_lock is defined properly - when defined as string'
+  ansible.builtin.assert:
+    that:
+      - >-
+        _sat_template_sync_settings |
+        selectattr('name', '==', 'template_sync_lock') |
+        map(attribute='value') |
+        first in _sat_template_sync_lock_allowed_values
+
+    success_msg: "Attribute 'template_sync_lock' is defined properly"
+    fail_msg: >-
+      {{
+        "Attribute 'template_sync_lock' has an invalid value set. Allowed values: " ~
+        _sat_template_sync_lock_allowed_values ~ '. Received value: ' ~
+        _sat_template_sync_settings |
+        selectattr('name', '==', 'template_sync_lock') |
+        map(attribute='value') |
+        first
+      }}
+    quiet: '{{ _sat_quiet_assert }}'
+  when:
+    # template_sync_lock is defined
+    - >-
+      _sat_template_sync_settings |
+      selectattr('name', '==', 'template_sync_lock') |
+      length == 1
+
+    # template_sync_lock is a string
+    - >-
+      _sat_template_sync_settings |
+      selectattr('name', '==', 'template_sync_lock') |
+      selectattr('value', 'string') |
+      length == 1
+
+- name: 'assert_settings | Ensure attribute template_sync_lock is defined properly - when defined as boolean'
+  ansible.builtin.assert:
+    that:
+      - >-
+        _sat_template_sync_settings |
+        selectattr('name', '==', 'template_sync_lock') |
+        map(attribute='value') |
+        first | bool | string
+        ==
+        _sat_template_sync_settings |
+        selectattr('name', '==', 'template_sync_lock') |
+        map(attribute='value') |
+        first | string
+
+    success_msg: "Attribute 'template_sync_lock' is defined properly"
+    fail_msg: "Attribute 'template_sync_lock' failed to validate"
+    quiet: '{{ _sat_quiet_assert }}'
+  when:
+    # template_sync_lock is defined
+    - >-
+      _sat_template_sync_settings |
+      selectattr('name', '==', 'template_sync_lock') |
+      length == 1
+
+    # template_sync_lock is a boolean
+    - >-
+      _sat_template_sync_settings |
+      selectattr('name', '==', 'template_sync_lock') |
+      selectattr('value', 'boolean') |
+      length == 1
+
+- name: 'assert_settings | Ensure attribute template_sync_associate is defined properly - when defined'
+  ansible.builtin.assert:
+    that:
+      - >-
+        _sat_template_sync_settings |
+        selectattr('name', '==', 'template_sync_associate') |
+        map(attribute='value') |
+        first in _sat_template_sync_associate_allowed_values
+
+    success_msg: "Attribute 'template_sync_associate' is defined properly"
+    fail_msg: >-
+      {{
+        "Attribute 'template_sync_associate' has an invalid value set. Allowed values: " ~
+        _sat_template_sync_associate_allowed_values ~ '. Received value: ' ~
+        _sat_template_sync_settings |
+        selectattr('name', '==', 'template_sync_associate') |
+        map(attribute='value') |
+        first
+      }}
+    quiet: '{{ _sat_quiet_assert }}'
+  when:
+    # template_sync_associate is defined
+    - >-
+      _sat_template_sync_settings |
+      selectattr('name', '==', 'template_sync_associate') |
+      length == 1
+...
