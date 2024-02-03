@@ -1,3 +1,4 @@
+[![ansible-lint](https://github.com/sscheib/ansible-role-satellite_template_synchronization/actions/workflows/ansible-lint.yml/badge.svg)](https://github.com/sscheib/ansible-role-satellite_template_synchronization/actions/workflows/ansible-lint.yml) [![Publish latest release to Ansible Galaxy](https://github.com/sscheib/ansible-role-satellite_template_synchronization/actions/workflows/ansible-galaxy.yml/badge.svg)](https://github.com/sscheib/ansible-role-satellite_template_synchronization/actions/workflows/ansible-galaxy.yml)
 
 satellite_template_synchronization
 =========
