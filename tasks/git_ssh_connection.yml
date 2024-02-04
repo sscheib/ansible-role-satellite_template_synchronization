@@ -23,15 +23,54 @@
         selectattr('name', '==', 'template_sync_repo') |
         map(attribute='value') |
         first |
+        ansible.builtin.urlsplit('port') != ''
+        and
+        _sat_template_sync_settings |
+        selectattr('name', '==', 'template_sync_repo') |
+        map(attribute='value') |
+        first |
         ansible.builtin.urlsplit('port') != None
         else
         22
       }}
 
-- name: 'git_ssh_connection | Set fact: Add custom port to repository host'
-  ansible.builtin.set_fact:
-    __t_repo_host: "{{ '[' ~ __t_repo_host ~ ']:' ~ __t_repo_port }}"
-  when: '__t_repo_port != 22'
+    # known_hosts requires a specific format when a custom SSH port is defined, so
+    # surround __t_repo_host with '[ ]' and append the port, otherwise simply set
+    # the hostname of attribute 'template_sync_repo'
+    # e.g.: [github.com]:2222
+    __t_repo_known_host: >-
+      {{
+        '[' ~
+        _sat_template_sync_settings |
+        selectattr('name', '==', 'template_sync_repo') |
+        map(attribute='value') |
+        first |
+        ansible.builtin.urlsplit('hostname') ~
+        ']:' ~
+        _sat_template_sync_settings |
+        selectattr('name', '==', 'template_sync_repo') |
+        map(attribute='value') |
+        first |
+        ansible.builtin.urlsplit('port')
+        if
+        _sat_template_sync_settings |
+        selectattr('name', '==', 'template_sync_repo') |
+        map(attribute='value') |
+        first |
+        ansible.builtin.urlsplit('port') != ''
+        and
+        _sat_template_sync_settings |
+        selectattr('name', '==', 'template_sync_repo') |
+        map(attribute='value') |
+        first |
+        ansible.builtin.urlsplit('port') != None
+        else
+        _sat_template_sync_settings |
+        selectattr('name', '==', 'template_sync_repo') |
+        map(attribute='value') |
+        first |
+        ansible.builtin.urlsplit('hostname')
+      }}
 
 - name: 'git_ssh_connection | Scan repository SSH host keys from: {{ __t_repo_host }}'
   ansible.builtin.shell:
@@ -41,7 +80,7 @@
 
 - name: 'git_ssh_connection | Add SSH host keys to known_hosts file'
   ansible.builtin.known_hosts:
-    name: '{{ __t_repo_host }}'
+    name: '{{ __t_repo_known_host }}'
     key: '{{ __t_host_key }}'
     path: '{{ _sat_foreman_known_hosts_file_path }}'
   become: true
